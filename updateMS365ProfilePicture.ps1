@@ -12,21 +12,27 @@ $allUsers = Get-MgUser -All
 
 foreach ($image in $images){
 
-
+$userNameFromImage = $image.Name.Replace(".jpg", "")
 $userCheck = $allUsers | Where-Object { $_.Mail -like "$userNameFromImage" }
 $fullPath = Join-Path $imageLocation $image.Name
 
 if ($userCheck)
 {
-Write-Host "$($userCheck.Mail) Funnet. Oppdaterer bilde" -ForegroundColor Green
+
 $userId = $userCheck.Id
+$UPN = $userCheck.Mail    
+Write-Host "$($UPN) Funnet. Forsøker å oppdatere bilde"
 
 if (Test-Path $fullPath) {
     try {
         Set-MgUserPhotoContent -UserId $userId -InFile $fullPath
-        Write-Host "User with $userId is updated"
+        Write-Host "Bruker ($userId) er oppdatert" -ForegroundColor Green
     }
-    catch {}
+    catch 
+    {
+        Write-Host "Feil ved oppdatering av bilde"
+        $_
+    }
 } else {
     Write-Host "Bildet for brukeren $userNameFromImage ble ikke funnet på filbanen" -ForegroundColor Red
 }
